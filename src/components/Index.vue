@@ -141,6 +141,14 @@
                         <el-button type="primary">电流</el-button>
                     </el-col>
                 </el-row>
+                <el-row :gutter="20" type="flex" class="row-bg" justify="space-around">
+                    <el-col :span="12">
+                        上位机发送的包个数：{{upNum}}
+                    </el-col>
+                    <el-col :span="12">
+                        下位机发送的包个数：{{downNum}}
+                    </el-col>
+                </el-row>
                 <el-row>
                     <div class="adc" id="adc1"></div>
                     <div class="adc" id="adc2"></div>
@@ -173,7 +181,9 @@
                 myChartses:[],
                 now:'',
                 oneDay:'',
-                value:''
+                value:'',
+                upNum:0,
+                downNum:0
             }
         },
         methods:{
