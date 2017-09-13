@@ -6,9 +6,20 @@ function getParameters($id, $group_name)
 {
     $file_names = array(
         '1' => array(
-            'ten_gbe_param' => 'fast_l8_ten_gbe_param.dat'
+            'ten_gbe_param' => array(
+                'name' => 'fast_l8_ten_gbe_param.dat',
+                'num' => 14
+            )
         )
     );
+    $file_name = $file_names[$id][$group_name];
+    $str = file_get_contents("./data/" . $file_name['name']);
+    $arr = unpack('v' . ($file_name['num'] + 1), $str);
+    $result_arr = array();
+    foreach ($arr as $item) {
+        array_push($result_arr, strtoupper(dechex((int)$item)));
+    }
+    return json_encode($result_arr);
 }
 
 $ws_server = new swoole_websocket_server('0.0.0.0', 9501); //创建ws服务
@@ -21,11 +32,11 @@ $ws_server->on('message', function (swoole_websocket_server $server, $frame) {
     echo "receive from {$frame->fd}:{$frame->data},opcode:{$frame->opcode},fin:{$frame->finish}\n";
     $data = json_decode($frame->data);
     $result = '';
-    switch ($data['type']) {
+    switch ($data->type) {
         case 'getParameter':
-            $result = getParameters($data['id'], $data['group']);
+            $result = getParameters($data->id, $data->group);
     }
-    $server->push($frame->fd, "this is server");
+    $server->push($frame->fd, $result);
 });
 //监听断开
 $ws_server->on('close', function ($ser, $fd) {
