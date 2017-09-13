@@ -1,8 +1,13 @@
 <template>
     <div>
+        <el-row type="flex" class="row-bg" justify="end">
+            <el-col :span="12">
+                <img src="../assets/zdhs.jpg" alt="自动化所">
+            </el-col>
+        </el-row>
         <el-row type="flex" justify="center">
-            <el-col :span="8">
-                <h1>{{name}}</h1>
+            <el-col>
+                <h1>{{name[id - 1]}}</h1>
             </el-col>
         </el-row>
         <el-row :gutter="20" :span="24">
@@ -15,7 +20,7 @@
                         </el-select>
                     </el-col>
                     <el-col :span="6">
-                        下位机启动
+                        <span>下位机启动</span>
                         <el-switch
                                 v-model="startValue"
                                 on-color="#13ce66"
@@ -26,7 +31,7 @@
                         <el-button type="primary">软复位</el-button>
                     </el-col>
                     <el-col :span="6">
-                        万兆网开关
+                        <span>万兆网开关</span>
                         <el-switch
                                 v-model="networkValue"
                                 on-color="#13ce66"
@@ -46,9 +51,15 @@
                                 <el-option label="32bits" value="32"></el-option>
                             </el-select>
                         </el-col>
-                        <el-col :span="6"><el-button type="primary">参数组别</el-button></el-col>
-                        <el-col :span="6"><el-button type="primary">保存</el-button></el-col>
-                        <el-col :span="6"><el-button type="primary">下载</el-button></el-col>
+                        <el-col :span="6">
+                            <el-button type="primary">参数组别</el-button>
+                        </el-col>
+                        <el-col :span="6">
+                            <el-button type="primary">保存</el-button>
+                        </el-col>
+                        <el-col :span="6">
+                            <el-button type="primary">下载</el-button>
+                        </el-col>
                     </el-row>
                     <el-row>
                         <el-input
@@ -72,9 +83,19 @@
                                 <el-option label="32bits" value="32"></el-option>
                             </el-select>
                         </el-col>
-                        <el-col :span="6"><el-button type="primary">参数组别</el-button></el-col>
-                        <el-col :span="6"><el-button type="primary">保存</el-button></el-col>
-                        <el-col :span="6"><el-button type="primary">下载</el-button></el-col>
+                        <el-col :span="6">
+                            <el-select v-model="group2Value" placeholder="参数组别" @change="get2Parameters">
+                                <el-option label="ten_gbe_param" value="ten_gbe_param"></el-option>
+                                <el-option label="adc_cal_param" value="adc_cal_param"></el-option>
+                                <el-option label="app_param" value="app_param"></el-option>
+                            </el-select>
+                        </el-col>
+                        <el-col :span="6">
+                            <el-button type="primary">保存</el-button>
+                        </el-col>
+                        <el-col :span="6">
+                            <el-button type="primary">下载</el-button>
+                        </el-col>
                     </el-row>
                     <el-row>
                         <el-input
@@ -91,23 +112,19 @@
                 <el-row>
                     <el-col :span="3">
                         <i class="el-icon-circle-check"></i>
-                        <br/>
-                        adc
+                        <p>adc</p>
                     </el-col>
                     <el-col :span="3">
                         <i class="el-icon-circle-check"></i>
-                        <br/>
-                        ten_gbeparam_done
+                        <p class="light_word">ten_gbeparam_done</p>
                     </el-col>
                     <el-col :span="3">
                         <i class="el-icon-circle-check"></i>
-                        <br/>
-                        app_param_done
+                        <p class="light_word">app_param_done</p>
                     </el-col>
                     <el-col :span="3">
                         <i class="el-icon-circle-check"></i>
-                        <br/>
-                        ten_gbe_link
+                        <p class="light_word">ten_gbe_link</p>
                     </el-col>
                     <el-col :span="3">
                         <i class="el-icon-circle-check"></i>
@@ -143,10 +160,10 @@
                 </el-row>
                 <el-row :gutter="20" type="flex" class="row-bg" justify="space-around">
                     <el-col :span="12">
-                        上位机发送的包个数：{{upNum}}
+                        <p>上位机发送的包个数：{{upNum}}</p>
                     </el-col>
                     <el-col :span="12">
-                        下位机发送的包个数：{{downNum}}
+                        <p>下位机发送的包个数：{{downNum}}</p>
                     </el-col>
                 </el-row>
                 <el-row>
@@ -167,26 +184,26 @@
 </template>
 
 <script>
-    import ElRow from "element-ui/packages/row/src/row";
     export default {
-        components: {ElRow},
         data () {
             return {
-                name:'下位机应用',
-                ppsValue:'',
-                startValue:true,
-                networkValue:true,
-                bitValue:'',
-                parameterValue:'',
-                myChartses:[],
-                now:'',
-                oneDay:'',
-                value:'',
-                upNum:0,
-                downNum:0
+                name: ['narrow bandwidth spectral line backend', 'pulsar search backend', 'baseband data backend'],
+                ppsValue: '',
+                startValue: true,
+                networkValue: true,
+                bitValue: '',
+                parameterValue: '',
+                myChartses: [],
+                now: '',
+                oneDay: '',
+                value: '',
+                upNum: 0,
+                downNum: 0,
+                id: 1,
+                group2Value:''
             }
         },
-        methods:{
+        methods: {
             randomData(){
                 this.now = new Date(+this.now + this.oneDay);
                 this.value = this.value + Math.random() * 21 - 10;
@@ -197,14 +214,30 @@
                         Math.round(this.value)
                     ]
                 }
+            },
+            getId(){
+                if (this.$route.params.id !== null) {
+                    if (this.$route.params.id > 3) {
+                        this.id = 1;
+                    }
+                    this.id = this.$route.params.id;
+                } else {
+                    this.id = 1;
+                }
+            },
+            get2Parameters(groupName){
+                let data = {'id': this.id, 'group': groupName, 'type': 'getParameter'};
+                this.$socket.send(JSON.stringify(data));
             }
         },
         mounted(){
+            this.getId();
+
             let echarts = require('echarts');
             this.now = +new Date(1997, 9, 3);
             this.oneDay = 24 * 3600 * 1000;
             this.value = Math.random() * 1000;
-            for(var i=1;i<=10;i++){
+            for (var i = 1; i <= 10; i++) {
                 let myCharts = echarts.init(document.getElementById('adc' + i));
                 var data = [];
                 for (var j = 0; j < 1000; j++) {
@@ -249,21 +282,32 @@
                 myCharts.setOption(option);
                 this.myChartses.push(myCharts);
             }
+        },
+        watch: {
+            '$route' (to, from) {
+                this.getId();
+            }
         }
     }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-    .el-button{
+    .el-button {
         width: 100%;
     }
-    .el-icon-circle-check{
+
+    .el-icon-circle-check {
         color: #13ce66;
     }
-    .adc{
+
+    .adc {
         width: 200px;
         height: 200px;
         float: left;
+    }
+
+    .light_word {
+        word-break: break-all;
     }
 </style>
