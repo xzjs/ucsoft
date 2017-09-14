@@ -20,18 +20,13 @@
                         </el-select>
                     </el-col>
                     <el-col :span="6">
-                        <span>下位机启动</span>
-                        <el-switch
-                                v-model="startValue"
-                                on-color="#13ce66"
-                                off-color="#ff4949">
-                        </el-switch>
+                        <el-button type="primary" @click="start">下位机启动</el-button>
                     </el-col>
                     <el-col :span="6">
                         <el-button type="primary" @click="rest">软复位</el-button>
                     </el-col>
                     <el-col :span="6">
-                        <span>万兆网开关</span>
+                        <span>万兆网</span>
                         <el-switch
                                 v-model="networkValue"
                                 @change="networkCtrl"
@@ -190,12 +185,14 @@
 
 <script>
     import { mapState } from 'vuex';
+    import ElButton from "../../node_modules/element-ui/packages/button/src/button";
 
     export default {
+        components: {ElButton},
         data () {
             return {
                 name: ['narrow bandwidth spectral line backend', 'pulsar search backend', 'baseband data backend'],
-                ppsValue: '',
+                ppsValue: 'internal',
                 startValue: true,
                 networkValue: false,
                 bitValue: '',
@@ -215,6 +212,20 @@
                             "src_ip_addr_h16", "src_port_number", 'dest_mac_addr_l16', 'dest_mac_addr_m16',
                             "dest_mac_addr_h16", "dest_ip_addr_l16", 'dest_ip_addr_m16', 'dest_port_number',
                             "pkt_len_l16", "pkt_len_h16"
+                        ],
+                        "adc_cal_param": ['标志位',
+                            "adc1_offset_A", "adc1_offset_B", 'adc1_offset_C', 'adc1_offset_D',
+                            "adc1_gain_A", "adc1_gain_B", 'adc1_gain_C', 'adc1_gain_D',
+                            "adc1_phase_A", "adc1_phase_B", 'adc1_phase_C', 'adc1_phase_D',
+                            "adc2_offset_A", "adc2_offset_B", 'adc2_offset_C', 'adc2_offset_D',
+                            "adc2_gain_A", "adc2_gain_B", 'adc2_gain_C', 'adc2_gain_D',
+                            "adc2_phase_A", "adc2_phase_B", 'adc2_phase_C', 'adc2_phase_D',
+                        ],
+                        "app_param": ['标志位',
+                            "mode_sel", "band_sel",
+                            's0_gain', 's1_gain', "s2_gain", "s3_gain", 's4_gain', 's5_gain', "s6_gain", "s7_gain",
+                            's0_mixer_cnt', 's1_mixer_cnt', "s2_mixer_cnt", "s3_mixer_cnt",'s4_mixer_cnt', 's5_mixer_cnt', "s6_mixer_cnt", "s7_mixer_cnt",
+                            'sync_period', 'ssg_length', "ssg_sel", "adc_sync_sel"
                         ]
                     }
                 ]
@@ -294,6 +305,17 @@
                 let data={
                     id:this.id,
                     type:'rest'
+                };
+                this.$socket.sendObj(data);
+            },
+            /**
+             * 下位机启动
+             */
+            start(){
+                let data={
+                    id:this.id,
+                    type:'start',
+                    pps:this.ppsValue
                 };
                 this.$socket.sendObj(data);
             }

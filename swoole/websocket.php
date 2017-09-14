@@ -7,9 +7,19 @@ class WSServer
     public $udp_server;
     public $file_names = array(
         '1' => array(
-            'ten_gbe_param' => array(
-                'name' => 'fast_l8_ten_gbe_param.dat',
-                'num' => 14
+            'parameters' => array(
+                'ten_gbe_param' => array(
+                    'name' => 'fast_l8_ten_gbe_param.dat',
+                    'num' => 14
+                ),
+                'adc_cal_param' => array(
+                    'name' => 'fast_l8_adc_cal_param.dat',
+                    'num' => 24
+                ),
+                'app_param' => array(
+                    'name' => 'fast_l8_app_param.dat',
+                    'num' => 22
+                )
             ),
             'ip' => '127.0.0.1',
             'port' => '8000',
@@ -39,15 +49,13 @@ class WSServer
                     break;
                 case 'downloadParameter':
                     $filename = $this->file_names[$data->id][$data->group]['name'];
-                    $ip = $this->file_names[$data->id]['ip'];
-                    $port = $this->file_names[$data->id]['port'];
-                    $result = $this->downloadParameters($filename, $ip, $port);
+                    $result = $this->downloadParameters($data->id, $filename);
                     break;
                 case 'networkCtrl':
                     $result = $this->networkCtrl($data->id, $data->value);
                     break;
                 case 'rest':
-                    $result=$this->rest($data->id);
+                    $result = $this->rest($data->id);
                     break;
                 default:
                     break;
@@ -116,15 +124,16 @@ class WSServer
 
     /**
      * 下发参数
+     * @param $id
      * @param $filename string 文件名
-     * @param $ip
-     * @param $port
      * @return string
      */
-    function downloadParameters($filename, $ip, $port)
+    function downloadParameters($id, $filename)
     {
         try {
             $client = new swoole_client(SWOOLE_SOCK_UDP, SWOOLE_SOCK_SYNC);
+            $ip = $this->file_names[$id]['ip'];
+            $port = $this->file_names[$id]['port'];
             $client->connect($ip, $port);
             $str = file_get_contents($filename);
             $client->send($str);
@@ -191,7 +200,76 @@ class WSServer
             echo $exception->getMessage();
             return $exception->getMessage();
         }
+    }
 
+    /**
+     *  下发命令
+     * @param $id integer 应用id
+     * @param $tag integer 标志位
+     * @param $filename string 文件路径
+     * @param $params array 参数数组
+     * @return string
+     */
+    function send_ctrl_word($id, $tag, $filename, $params)
+    {
+        try {
+            $handle = fopen("./data/$filename", "wb");//打开date.bat文件不存在则创建文件
+            if (fwrite($handle, pack("v", $tag)) == FALSE) {//数据打包成二进制字符串后写入文件
+                throw new Exception('Can not write data.dat');
+            }
+            foreach ($params as $param) {
+                if (fwrite($handle, pack('V', 0x0)) == FALSE) {//数据打包成二进制字符串后写入文件
+                    throw new Exception('Can not write data.dat');
+                }
+            }
+            fclose($handle);//关闭一个已打开的文件指针
+            echo 'write file success';
+            return $this->downloadParameters($filename, $this->file_names[$id]['ip'], $this->file_names[$id]['port']);
+        } catch (Exception $exception) {
+            echo $exception->getMessage();
+            return $exception->getMessage();
+        }
+    }
+
+    /**
+     * @param $id
+     * @param $pps
+     * @return string
+     */
+    function start($id, $pps)
+    {
+        try {
+            foreach ($this->file_names[$id]['parameters'] as $file_name) {
+                $this->downloadParameters($id, "./data/$file_name");
+            }
+            if ($id != 2) {
+                $this->send_ctrl_word($id, 0xFE, "sync_ctrl.dat", [0x12]);
+                $this->send_ctrl_word($id, 0xFF, "arm.dat", [0x0]);
+                $this->send_ctrl_word($id, 0xFF, "arm.dat", [0x1]);
+                $this->send_ctrl_word($id, 0xFF, "arm.dat", [0x0]);
+                if ($pps == 'internal') {
+                    $this->send_ctrl_word($id, 0xFE, "sync_ctrl.dat", [0x11]);
+                }else{
+                    $this->send_ctrl_word($id, 0xFE, "sync_ctrl.dat", [0x14]);
+                }
+            }else{
+                if ($pps == 'internal') {
+                    $this->send_ctrl_word($id, 0xFE, "arm.dat", [0x80000000]);
+                    $this->send_ctrl_word($id, 0xFE, "arm.dat", [0x80000001]);
+                    $this->send_ctrl_word($id, 0xFE, "arm.dat", [0x80000000]);
+                    $this->send_ctrl_word($id, 0xFD, "internal_sync.dat", [0x0]);
+                    $this->send_ctrl_word($id, 0xFD, "internal_sync.dat", [0x1]);
+                    $this->send_ctrl_word($id, 0xFD, "internal_sync.dat", [0x0]);
+                }else{
+                    $this->send_ctrl_word($id, 0xFF, "arm.dat", [0x0]);
+                    $this->send_ctrl_word($id, 0xFF, "arm.dat", [0x1]);
+                    $this->send_ctrl_word($id, 0xFF, "arm.dat", [0x0]);
+                }
+            }
+        } catch (Exception $exception) {
+            echo $exception->getMessage();
+            return $exception->getMessage();
+        }
     }
 }
 
