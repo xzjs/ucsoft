@@ -232,6 +232,7 @@ class WSServer
     }
 
     /**
+     * 下位机启动
      * @param $id
      * @param $pps
      * @return string
@@ -266,6 +267,8 @@ class WSServer
                     $this->send_ctrl_word($id, 0xFF, "arm.dat", [0x0]);
                 }
             }
+            echo 'start success';
+            return json_encode(true);
         } catch (Exception $exception) {
             echo $exception->getMessage();
             return $exception->getMessage();
