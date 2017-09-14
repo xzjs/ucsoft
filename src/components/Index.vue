@@ -28,12 +28,13 @@
                         </el-switch>
                     </el-col>
                     <el-col :span="6">
-                        <el-button type="primary">软复位</el-button>
+                        <el-button type="primary" @click="rest">软复位</el-button>
                     </el-col>
                     <el-col :span="6">
                         <span>万兆网开关</span>
                         <el-switch
                                 v-model="networkValue"
+                                @change="networkCtrl"
                                 on-color="#13ce66"
                                 off-color="#ff4949">
                         </el-switch>
@@ -91,20 +92,24 @@
                             </el-select>
                         </el-col>
                         <el-col :span="6">
-                            <el-button type="primary">保存</el-button>
+                            <el-button type="primary" @click="set2Parameters">保存</el-button>
                         </el-col>
                         <el-col :span="6">
-                            <el-button type="primary">下载</el-button>
+                            <el-button type="primary" @click="download">下载</el-button>
                         </el-col>
                     </el-row>
                     <el-row>
-                        <el-input
-                                type="textarea"
-                                autosize
-                                :autosize="{ minRows: 5, maxRows: 100}"
-                                placeholder="参数显示与编辑"
-                                v-model="parameterValue">
-                        </el-input>
+                        <ul>
+                            <li v-for="(item,index) in parameterData">
+                                <el-col :span="12">
+                                    <span>{{group2Parameters[id-1][group2Value][index]}}:</span>
+                                </el-col>
+                                <el-col :span="12">
+                                    <span>0x</span>
+                                    <el-input class="parameter_input" v-model="parameterData[index]" placeholder="请输入内容"></el-input>
+                                </el-col>
+                            </li>
+                        </ul>
                     </el-row>
                 </el-row>
             </el-col>
@@ -184,13 +189,15 @@
 </template>
 
 <script>
+    import { mapState } from 'vuex';
+
     export default {
         data () {
             return {
                 name: ['narrow bandwidth spectral line backend', 'pulsar search backend', 'baseband data backend'],
                 ppsValue: '',
                 startValue: true,
-                networkValue: true,
+                networkValue: false,
                 bitValue: '',
                 parameterValue: '',
                 myChartses: [],
@@ -200,8 +207,21 @@
                 upNum: 0,
                 downNum: 0,
                 id: 1,
-                group2Value:''
+                group2Value: '',
+                group2Parameters: [
+                    {
+                        "ten_gbe_param": ['标志位',
+                            "src_mac_addr_l16", "src_mac_addr_m16", 'src_mac_addr_h16', 'src_ip_addr_l16',
+                            "src_ip_addr_h16", "src_port_number", 'dest_mac_addr_l16', 'dest_mac_addr_m16',
+                            "dest_mac_addr_h16", "dest_ip_addr_l16", 'dest_ip_addr_m16', 'dest_port_number',
+                            "pkt_len_l16", "pkt_len_h16"
+                        ]
+                    }
+                ]
             }
+        },
+        computed:{
+            ...mapState(['parameterData'])
         },
         methods: {
             randomData(){
@@ -216,7 +236,7 @@
                 }
             },
             getId(){
-                if (this.$route.params.id !== null) {
+                if (this.$route.params.id != null) {
                     if (this.$route.params.id > 3) {
                         this.id = 1;
                     }
@@ -225,9 +245,57 @@
                     this.id = 1;
                 }
             },
+            /**
+             * 获取参数
+             * @param groupName
+             */
             get2Parameters(groupName){
                 let data = {'id': this.id, 'group': groupName, 'type': 'getParameter'};
-                this.$socket.send(JSON.stringify(data));
+                this.$socket.sendObj(data);
+            },
+            /**
+             * 设置参数
+             */
+            set2Parameters(){
+                let data={
+                    id:this.id,
+                    group:this.group2Value,
+                    type:'setParameter',
+                    parameters:this.parameterData
+                };
+                this.$socket.sendObj(data);
+            },
+            /**
+             * 下发参数
+             */
+            download(){
+                let data={
+                    id:this.id,
+                    group:this.group2Value,
+                    type:'downloadParameter'
+                };
+                this.$socket.sendObj(data);
+            },
+            /**
+             * 万兆网开关
+             */
+            networkCtrl(value){
+                let data={
+                    id:this.id,
+                    type:'networkCtrl',
+                    value:value
+                };
+                this.$socket.sendObj(data);
+            },
+            /**
+             * 软复位
+             */
+            rest(){
+                let data={
+                    id:this.id,
+                    type:'rest'
+                };
+                this.$socket.sendObj(data);
             }
         },
         mounted(){
@@ -309,5 +377,11 @@
 
     .light_word {
         word-break: break-all;
+    }
+    ul{
+        list-style: none;
+    }
+    .parameter_input{
+        width: 100px;
     }
 </style>

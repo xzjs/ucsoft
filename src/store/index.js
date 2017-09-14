@@ -7,6 +7,7 @@ export default new Vuex.Store({
     state: {
         isConnected: false,
         message: '',
+        parameterData: []
     },
     mutations: {
         SOCKET_ONOPEN (state, event)  {
@@ -20,8 +21,15 @@ export default new Vuex.Store({
         },
         // default handler called for all methods
         SOCKET_ONMESSAGE (state, message)  {
-            state.message = message.data;
+            state.message = message;
             console.log(message);
+            switch (message['type']){
+                case 'getParameter':
+                    state.parameterData=message['parameter'];
+                    break;
+                default:
+                    break;
+            }
         }
     }
 })

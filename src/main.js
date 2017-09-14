@@ -11,7 +11,7 @@ import store from './store/index'
 Vue.config.productionTip = false;
 
 Vue.use(ElementUI);
-Vue.use(VueNativeSock, 'ws://localhost:9501', {store: store});
+Vue.use(VueNativeSock, 'ws://localhost:9501', {store: store, format: 'json'});
 
 /* eslint-disable no-new */
 new Vue({
