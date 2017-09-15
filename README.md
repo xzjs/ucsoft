@@ -1,10 +1,23 @@
 # ucsoft
 
-> A Vue.js project
+> 下位机控制软件
 
 ## Build Setup
 
 ``` bash
+#安装pecl
+sudo apt-get install php-dev php-pear autoconf，automake，libtool  -y
+
+#安装swoole
+pecl install swoole
+
+#运行主文件
+cd swoole
+php websocket.php
+
+#安装node
+下载安装包安装就好
+
 # install dependencies
 npm install
 
@@ -17,5 +30,3 @@ npm run build
 # build for production and view the bundle analyzer report
 npm run build --report
 ```
-
-For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
