@@ -168,6 +168,7 @@
                     </el-col>
                 </el-row>
                 <el-row>
+                    <div class="adc" id="adc0"></div>
                     <div class="adc" id="adc1"></div>
                     <div class="adc" id="adc2"></div>
                     <div class="adc" id="adc3"></div>
@@ -177,7 +178,6 @@
                     <div class="adc" id="adc7"></div>
                     <div class="adc" id="adc8"></div>
                     <div class="adc" id="adc9"></div>
-                    <div class="adc" id="adc10"></div>
                 </el-row>
             </el-col>
         </el-row>
@@ -185,11 +185,9 @@
 </template>
 
 <script>
-    import {mapState} from 'vuex';
-    import ElButton from "../../node_modules/element-ui/packages/button/src/button";
+    import {mapState, mapMutations} from 'vuex';
 
     export default {
-        components: {ElButton},
         data () {
             return {
                 name: ['narrow bandwidth spectral line backend', 'pulsar search backend', 'baseband data backend'],
@@ -198,7 +196,6 @@
                 networkValue: false,
                 bitValue: '',
                 parameterValue: '',
-                myChartses: [],
                 now: '',
                 oneDay: '',
                 value: '',
@@ -232,20 +229,10 @@
             }
         },
         computed: {
-            ...mapState(['parameterData', 'light', 'd_num'])
+            ...mapState(['parameterData', 'light', 'd_num', 'myChartses'])
         },
         methods: {
-            randomData(){
-                this.now = new Date(+this.now + this.oneDay);
-                this.value = this.value + Math.random() * 21 - 10;
-                return {
-                    name: this.now.toString(),
-                    value: [
-                        [this.now.getFullYear(), this.now.getMonth() + 1, this.now.getDate()].join('/'),
-                        Math.round(this.value)
-                    ]
-                }
-            },
+            ...mapMutations(['setCharts']),
             getId(){
                 if (this.$route.params.id != null) {
                     if (this.$route.params.id > 3) {
@@ -328,55 +315,10 @@
         },
         mounted(){
             this.getId();
-
             let echarts = require('echarts');
-            this.now = +new Date(1997, 9, 3);
-            this.oneDay = 24 * 3600 * 1000;
-            this.value = Math.random() * 1000;
-            for (var i = 1; i <= 10; i++) {
+            for (var i = 0; i < 10; i++) {
                 let myCharts = echarts.init(document.getElementById('adc' + i));
-                var data = [];
-                for (var j = 0; j < 1000; j++) {
-                    data.push(this.randomData());
-                }
-                var option = {
-                    title: {
-                        text: i
-                    },
-                    tooltip: {
-                        trigger: 'axis',
-                        formatter: function (params) {
-                            params = params[0];
-                            var date = new Date(params.name);
-                            return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' : ' + params.value[1];
-                        },
-                        axisPointer: {
-                            animation: false
-                        }
-                    },
-                    xAxis: {
-                        type: 'time',
-                        splitLine: {
-                            show: false
-                        }
-                    },
-                    yAxis: {
-                        type: 'value',
-                        boundaryGap: [0, '100%'],
-                        splitLine: {
-                            show: false
-                        }
-                    },
-                    series: [{
-                        name: '模拟数据',
-                        type: 'line',
-                        showSymbol: false,
-                        hoverAnimation: false,
-                        data: data
-                    }]
-                };
-                myCharts.setOption(option);
-                this.myChartses.push(myCharts);
+                this.setCharts(myCharts);
             }
         },
         watch: {

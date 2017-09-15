@@ -8,8 +8,9 @@ export default new Vuex.Store({
         isConnected: false,
         message: '',
         parameterData: [],
-        light:'00000000',
-        d_num:0
+        light: '00000000',
+        d_num: 0,
+        myChartses: []
     },
     mutations: {
         SOCKET_ONOPEN (state, event)  {
@@ -25,16 +26,57 @@ export default new Vuex.Store({
         SOCKET_ONMESSAGE (state, message)  {
             state.message = message;
             console.log(message);
-            switch (message['type']){
+            switch (message['type']) {
                 case 'getParameter':
-                    state.parameterData=message['parameter'];
+                    state.parameterData = message['parameter'];
                     break;
                 case 'light':
-                    state.light=message['light'].toString(2);
-                    state.d_num=message['num'];
+                    state.light = message['light'].toString(2);
+                    state.d_num = message['num'];
+                    break;
+                case 'adc':
+                    var xData = [];
+                    var yData = [];
+                    for(var i in message.data){
+                        xData.push(i);
+                        yData.push(message.data[i]);
+                    }
+                    console.log(xData);
+                    console.log(yData);
+
+
+                    state.myChartses[message['no']].setOption({
+                        title: {
+                            text: message['no']
+                        },
+                        tooltip: {
+                            trigger: 'axis',
+                            formatter: function (params) {
+                                params = params[0];
+                                return params.value;
+                            },
+                            axisPointer: {
+                                animation: false
+                            }
+                        },
+                        xAxis: {
+                            data: xData
+                        },
+                        yAxis: {},
+                        series: [{
+                            name: '模拟数据',
+                            type: 'line',
+                            showSymbol: false,
+                            hoverAnimation: false,
+                            data: yData
+                        }]
+                    });
                 default:
                     break;
             }
+        },
+        setCharts(state, chart){
+            state.myChartses.push(chart);
         }
     }
 })

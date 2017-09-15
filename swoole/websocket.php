@@ -5,8 +5,8 @@ class WSServer
 
     public $ws_server;
     public $udp_server;
-    public $file_names = array(
-        '1' => array(
+    public $file_names = [
+        array(
             'parameters' => array(
                 'ten_gbe_param' => array(
                     'name' => 'fast_l8_ten_gbe_param.dat',
@@ -23,7 +23,9 @@ class WSServer
             ),
             'ip' => '127.0.0.1',
             'port' => '8000',
-        ),
+        )
+    ];
+    public $config = array(
         'network' => 'ten_gbe_enable.dat',
         'rest' => 'adc_soft_rst.dat'
     );
@@ -48,14 +50,17 @@ class WSServer
                     $this->setParameters($data->id, $data->group, $data->parameters);
                     break;
                 case 'downloadParameter':
-                    $filename = $this->file_names[$data->id][$data->group]['name'];
-                    $result = $this->downloadParameters($data->id, $filename);
+                    $filename = $this->file_names[$data->id - 1]['parameters'][$data->group]['name'];
+                    $result = $this->downloadParameters($data->id, "./data/$filename");
                     break;
                 case 'networkCtrl':
                     $result = $this->networkCtrl($data->id, $data->value);
                     break;
                 case 'rest':
                     $result = $this->rest($data->id);
+                    break;
+                case 'start':
+                    $result = $this->start($data->id, $data->pps);
                     break;
                 default:
                     break;
@@ -75,10 +80,19 @@ class WSServer
             $tag = unpack('v', $tag);
             var_dump($tag);
             $result = array();
-            if ($tag['1'] == 256) {
-                $result['type']='light';
-                $result['light'] = unpack('C', substr($data, 2, 1))['1'];
-                $result['num'] = unpack('v', substr($data, -2, 2))['1'];
+            switch ($tag['1']) {
+                case 256:
+                    $result['type'] = 'light';
+                    $result['light'] = unpack('C', substr($data, 2, 1))['1'];
+                    $result['num'] = unpack('v', substr($data, -2, 2))['1'];
+                    break;
+                case 257:
+                    $result['type'] = 'adc';
+                    $result['no'] = 0;
+                    $result['data'] = unpack('v512', substr($data, 2));
+                    break;
+                default:
+                    break;
             }
             var_dump($result);
             foreach ($this->ws_server->connections as $connection) {
@@ -95,7 +109,7 @@ class WSServer
     {
         var_dump($id);
         var_dump($group_name);
-        $file_name = $this->file_names[$id][$group_name];
+        $file_name = $this->file_names[$id - 1]['parameters'][$group_name];
         $str = file_get_contents("./data/" . $file_name['name']);
         $arr = unpack('v' . ($file_name['num'] + 1), $str);
         $result_arr = array();
@@ -117,7 +131,7 @@ class WSServer
     function setParameters($id, $group_name, $parameters)
     {
         try {
-            $file_name = $this->file_names[$id][$group_name];
+            $file_name = $this->file_names[$id - 1]['parameters'][$group_name];
             $handle = fopen("./data/" . $file_name['name'], "wb");//打开date.bat文件不存在则创建文件
             foreach ($parameters as $parameter) {
                 if (fwrite($handle, pack("v", hexdec($parameter))) == FALSE) {//数据打包成二进制字符串后写入文件
@@ -140,9 +154,10 @@ class WSServer
     function downloadParameters($id, $filename)
     {
         try {
+            echo $filename."\n";
             $client = new swoole_client(SWOOLE_SOCK_UDP, SWOOLE_SOCK_SYNC);
-            $ip = $this->file_names[$id]['ip'];
-            $port = $this->file_names[$id]['port'];
+            $ip = $this->file_names[$id - 1]['ip'];
+            $port = $this->file_names[$id - 1]['port'];
             $client->connect($ip, $port);
             $str = file_get_contents($filename);
             $client->send($str);
@@ -173,7 +188,7 @@ class WSServer
             }
             fclose($handle);//关闭一个已打开的文件指针
             echo 'write file success';
-            return $this->downloadParameters($filename, $this->file_names[$id]['ip'], $this->file_names[$id]['port']);
+            return $this->downloadParameters($id, $filename);
         } catch (Exception $exception) {
             echo $exception->getMessage();
             return $exception->getMessage();
@@ -204,7 +219,7 @@ class WSServer
             }
             fclose($handle);//关闭一个已打开的文件指针
             echo 'write file success';
-            return $this->downloadParameters($filename, $this->file_names[$id]['ip'], $this->file_names[$id]['port']);
+            return $this->downloadParameters($id, $filename);
         } catch (Exception $exception) {
             echo $exception->getMessage();
             return $exception->getMessage();
@@ -233,7 +248,7 @@ class WSServer
             }
             fclose($handle);//关闭一个已打开的文件指针
             echo 'write file success';
-            return $this->downloadParameters($filename, $this->file_names[$id]['ip'], $this->file_names[$id]['port']);
+            return $this->downloadParameters($id,"./data/$filename");
         } catch (Exception $exception) {
             echo $exception->getMessage();
             return $exception->getMessage();
@@ -249,8 +264,8 @@ class WSServer
     function start($id, $pps)
     {
         try {
-            foreach ($this->file_names[$id]['parameters'] as $file_name) {
-                $this->downloadParameters($id, "./data/$file_name");
+            foreach ($this->file_names[$id-1]['parameters'] as $file_name) {
+                $this->downloadParameters($id, "./data/".$file_name['name']);
             }
             if ($id != 2) {
                 $this->send_ctrl_word($id, 0xFE, "sync_ctrl.dat", [0x12]);
