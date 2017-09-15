@@ -97,11 +97,12 @@
                         <ul>
                             <li v-for="(item,index) in parameterData">
                                 <el-col :span="12">
-                                    <span>{{group2Parameters[id-1][group2Value][index]}}:</span>
+                                    <span>{{group2Parameters[id - 1][group2Value][index]}}:</span>
                                 </el-col>
                                 <el-col :span="12">
                                     <span>0x</span>
-                                    <el-input class="parameter_input" v-model="parameterData[index]" placeholder="请输入内容"></el-input>
+                                    <el-input class="parameter_input" v-model="parameterData[index]"
+                                              placeholder="请输入内容"></el-input>
                                 </el-col>
                             </li>
                         </ul>
@@ -111,38 +112,38 @@
             <el-col :span="12">
                 <el-row>
                     <el-col :span="3">
-                        <i class="el-icon-circle-check"></i>
+                        <i class="el-icon-circle-check" v-bind:class="{light:light[0]=='1'}"></i>
                         <p>adc</p>
                     </el-col>
                     <el-col :span="3">
-                        <i class="el-icon-circle-check"></i>
+                        <i class="el-icon-circle-check" v-bind:class="{light:light[1]=='1'}"></i>
                         <p class="light_word">ten_gbeparam_done</p>
                     </el-col>
                     <el-col :span="3">
-                        <i class="el-icon-circle-check"></i>
+                        <i class="el-icon-circle-check" v-bind:class="{light:light[2]=='1'}"></i>
                         <p class="light_word">app_param_done</p>
                     </el-col>
                     <el-col :span="3">
-                        <i class="el-icon-circle-check"></i>
+                        <i class="el-icon-circle-check" v-bind:class="{light:light[3]=='1'}"></i>
                         <p class="light_word">ten_gbe_link</p>
                     </el-col>
                     <el-col :span="3">
-                        <i class="el-icon-circle-check"></i>
+                        <i class="el-icon-circle-check" v-bind:class="{light:light[4]=='1'}"></i>
                         <br/>
 
                     </el-col>
                     <el-col :span="3">
-                        <i class="el-icon-circle-check"></i>
+                        <i class="el-icon-circle-check" v-bind:class="{light:light[5]=='1'}"></i>
                         <br/>
 
                     </el-col>
                     <el-col :span="3">
-                        <i class="el-icon-circle-check"></i>
+                        <i class="el-icon-circle-check" v-bind:class="{light:light[6]=='1'}"></i>
                         <br/>
 
                     </el-col>
                     <el-col :span="3">
-                        <i class="el-icon-circle-check"></i>
+                        <i class="el-icon-circle-check" v-bind:class="{light:light[7]=='1'}"></i>
                         <br/>
 
                     </el-col>
@@ -163,7 +164,7 @@
                         <p>上位机发送的包个数：{{upNum}}</p>
                     </el-col>
                     <el-col :span="12">
-                        <p>下位机发送的包个数：{{downNum}}</p>
+                        <p>下位机发送的包个数：{{d_num}}</p>
                     </el-col>
                 </el-row>
                 <el-row>
@@ -184,7 +185,7 @@
 </template>
 
 <script>
-    import { mapState } from 'vuex';
+    import {mapState} from 'vuex';
     import ElButton from "../../node_modules/element-ui/packages/button/src/button";
 
     export default {
@@ -202,7 +203,6 @@
                 oneDay: '',
                 value: '',
                 upNum: 0,
-                downNum: 0,
                 id: 1,
                 group2Value: '',
                 group2Parameters: [
@@ -224,15 +224,15 @@
                         "app_param": ['标志位',
                             "mode_sel", "band_sel",
                             's0_gain', 's1_gain', "s2_gain", "s3_gain", 's4_gain', 's5_gain', "s6_gain", "s7_gain",
-                            's0_mixer_cnt', 's1_mixer_cnt', "s2_mixer_cnt", "s3_mixer_cnt",'s4_mixer_cnt', 's5_mixer_cnt', "s6_mixer_cnt", "s7_mixer_cnt",
+                            's0_mixer_cnt', 's1_mixer_cnt', "s2_mixer_cnt", "s3_mixer_cnt", 's4_mixer_cnt', 's5_mixer_cnt', "s6_mixer_cnt", "s7_mixer_cnt",
                             'sync_period', 'ssg_length', "ssg_sel", "adc_sync_sel"
                         ]
                     }
                 ]
             }
         },
-        computed:{
-            ...mapState(['parameterData'])
+        computed: {
+            ...mapState(['parameterData', 'light', 'd_num'])
         },
         methods: {
             randomData(){
@@ -263,61 +263,67 @@
             get2Parameters(groupName){
                 let data = {'id': this.id, 'group': groupName, 'type': 'getParameter'};
                 this.$socket.sendObj(data);
+                this.upNum += 1;
             },
             /**
              * 设置参数
              */
             set2Parameters(){
-                let data={
-                    id:this.id,
-                    group:this.group2Value,
-                    type:'setParameter',
-                    parameters:this.parameterData
+                let data = {
+                    id: this.id,
+                    group: this.group2Value,
+                    type: 'setParameter',
+                    parameters: this.parameterData
                 };
                 this.$socket.sendObj(data);
+                this.upNum += 1;
             },
             /**
              * 下发参数
              */
             download(){
-                let data={
-                    id:this.id,
-                    group:this.group2Value,
-                    type:'downloadParameter'
+                let data = {
+                    id: this.id,
+                    group: this.group2Value,
+                    type: 'downloadParameter'
                 };
                 this.$socket.sendObj(data);
+                this.upNum += 1;
             },
             /**
              * 万兆网开关
              */
             networkCtrl(value){
-                let data={
-                    id:this.id,
-                    type:'networkCtrl',
-                    value:value
+                let data = {
+                    id: this.id,
+                    type: 'networkCtrl',
+                    value: value
                 };
                 this.$socket.sendObj(data);
+                this.upNum += 1;
             },
             /**
              * 软复位
              */
             rest(){
-                let data={
-                    id:this.id,
-                    type:'rest'
+                let data = {
+                    id: this.id,
+                    type: 'rest'
                 };
                 this.$socket.sendObj(data);
+                this.upNum += 1;
             },
             /**
              * 下位机启动
              */
             start(){
-                let data={
-                    id:this.id,
-                    type:'start',
-                    pps:this.ppsValue
+                let data = {
+                    id: this.id,
+                    type: 'start',
+                    pps: this.ppsValue
                 };
                 this.$socket.sendObj(data);
+                this.upNum += 1;
             }
         },
         mounted(){
@@ -387,7 +393,7 @@
         width: 100%;
     }
 
-    .el-icon-circle-check {
+    .light {
         color: #13ce66;
     }
 
@@ -400,10 +406,12 @@
     .light_word {
         word-break: break-all;
     }
-    ul{
+
+    ul {
         list-style: none;
     }
-    .parameter_input{
+
+    .parameter_input {
         width: 100px;
     }
 </style>

@@ -7,7 +7,9 @@ export default new Vuex.Store({
     state: {
         isConnected: false,
         message: '',
-        parameterData: []
+        parameterData: [],
+        light:'00000000',
+        d_num:0
     },
     mutations: {
         SOCKET_ONOPEN (state, event)  {
@@ -27,6 +29,9 @@ export default new Vuex.Store({
                 case 'getParameter':
                     state.parameterData=message['parameter'];
                     break;
+                case 'light':
+                    state.light=message['light'].toString(2);
+                    state.d_num=message['num'];
                 default:
                     break;
             }

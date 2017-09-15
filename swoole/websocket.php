@@ -71,10 +71,19 @@ class WSServer
         //监听udp消息
         $this->udp_server->on('Packet', function (swoole_server $serv, $data, $addr) {
             var_dump($data);
-//            global $ws_server;
+            $tag = substr($data, 0, 2);
+            $tag = unpack('v', $tag);
+            var_dump($tag);
+            $result = array();
+            if ($tag['1'] == 256) {
+                $result['type']='light';
+                $result['light'] = unpack('C', substr($data, 2, 1))['1'];
+                $result['num'] = unpack('v', substr($data, -2, 2))['1'];
+            }
+            var_dump($result);
             foreach ($this->ws_server->connections as $connection) {
                 echo $connection;
-                $this->ws_server->push($connection, $data);
+                $this->ws_server->push($connection, json_encode($result));
             }
         });
     }
@@ -250,10 +259,10 @@ class WSServer
                 $this->send_ctrl_word($id, 0xFF, "arm.dat", [0x0]);
                 if ($pps == 'internal') {
                     $this->send_ctrl_word($id, 0xFE, "sync_ctrl.dat", [0x11]);
-                }else{
+                } else {
                     $this->send_ctrl_word($id, 0xFE, "sync_ctrl.dat", [0x14]);
                 }
-            }else{
+            } else {
                 if ($pps == 'internal') {
                     $this->send_ctrl_word($id, 0xFE, "arm.dat", [0x80000000]);
                     $this->send_ctrl_word($id, 0xFE, "arm.dat", [0x80000001]);
@@ -261,7 +270,7 @@ class WSServer
                     $this->send_ctrl_word($id, 0xFD, "internal_sync.dat", [0x0]);
                     $this->send_ctrl_word($id, 0xFD, "internal_sync.dat", [0x1]);
                     $this->send_ctrl_word($id, 0xFD, "internal_sync.dat", [0x0]);
-                }else{
+                } else {
                     $this->send_ctrl_word($id, 0xFF, "arm.dat", [0x0]);
                     $this->send_ctrl_word($id, 0xFF, "arm.dat", [0x1]);
                     $this->send_ctrl_word($id, 0xFF, "arm.dat", [0x0]);
