@@ -48,12 +48,21 @@ function w()
 //            echo "Can not write data.dat.";
 //        }
 //    }
-    $handle=fopen('./data/adc2.dat','wb');
-    if (fwrite($handle, pack("v", 0x102)) == FALSE) {//数据打包成二进制字符串后写入文件
+//    $handle=fopen('./data/adc2.dat','wb');
+//    if (fwrite($handle, pack("v", 0x102)) == FALSE) {//数据打包成二进制字符串后写入文件
+//        echo "Can not write data.dat.";
+//    }
+//    for($i=0;$i<512;$i++){
+//        if (fwrite($handle, pack("v", 0x101)) == FALSE) {//数据打包成二进制字符串后写入文件
+//            echo "Can not write data.dat.";
+//        }
+//    }
+    $handle=fopen('./data/adc3.dat','wb');
+    if (fwrite($handle, pack("v", 0x103)) == FALSE) {//数据打包成二进制字符串后写入文件
         echo "Can not write data.dat.";
     }
-    for($i=0;$i<512;$i++){
-        if (fwrite($handle, pack("v", 0x101)) == FALSE) {//数据打包成二进制字符串后写入文件
+    for($i=0;$i<1024;$i++){
+        if (fwrite($handle, pack("C", 0x10)) == FALSE) {//数据打包成二进制字符串后写入文件
             echo "Can not write data.dat.";
         }
     }

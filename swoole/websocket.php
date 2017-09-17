@@ -87,15 +87,22 @@ class WSServer
                     $result['num'] = unpack('v', substr($data, -2, 2))['1'];
                     break;
                 case 257:
-                    $result['type'] = 'adc';
-                    $result['no'] = 0;
-                    $result['data'] = unpack('v512', substr($data, 2));
-                    break;
                 case 258:
                     $result['type'] = 'adc';
-                    $result['no'] = 1;
+                    $result['no'] = $tag['1'] - 257;
                     $result['data'] = unpack('v512', substr($data, 2));
                     break;
+                case 259:
+                case 260:
+                case 261:
+                case 262:
+                case 263:
+                case 264:
+                case 265:
+                case 266:
+                    $result['type'] = 'adc';
+                    $result['no'] = $tag['1'] - 257;
+                    $result['data'] = unpack('C1024', substr($data, 2));
                 default:
                     break;
             }
@@ -159,7 +166,7 @@ class WSServer
     function downloadParameters($id, $filename)
     {
         try {
-            echo $filename."\n";
+            echo $filename . "\n";
             $client = new swoole_client(SWOOLE_SOCK_UDP, SWOOLE_SOCK_SYNC);
             $ip = $this->file_names[$id - 1]['ip'];
             $port = $this->file_names[$id - 1]['port'];
@@ -253,7 +260,7 @@ class WSServer
             }
             fclose($handle);//关闭一个已打开的文件指针
             echo 'write file success';
-            return $this->downloadParameters($id,"./data/$filename");
+            return $this->downloadParameters($id, "./data/$filename");
         } catch (Exception $exception) {
             echo $exception->getMessage();
             return $exception->getMessage();
@@ -269,8 +276,8 @@ class WSServer
     function start($id, $pps)
     {
         try {
-            foreach ($this->file_names[$id-1]['parameters'] as $file_name) {
-                $this->downloadParameters($id, "./data/".$file_name['name']);
+            foreach ($this->file_names[$id - 1]['parameters'] as $file_name) {
+                $this->downloadParameters($id, "./data/" . $file_name['name']);
             }
             if ($id != 2) {
                 $this->send_ctrl_word($id, 0xFE, "sync_ctrl.dat", [0x12]);
