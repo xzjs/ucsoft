@@ -15,19 +15,19 @@ function w()
 //        0x200, 0x235, 0x26C, 0x240,
 //        0x200, 0x200, 0x200, 0x200,];
 //    $handle = fopen("./data/fast_l8_adc_cal_param.dat", "wb");//打开date.bat文件不存在则创建文件
-    $numbers = [0xF4,
-        0x22D, 0x213, 0x22E, 0x231,
-        0x200, 0x280, 0x260, 0x225,
-        0x200, 0x200, 0x200, 0x200,
-        0x1E0, 0x23B, 0x206, 0x1D6,
-        0x200, 0x235, 0x26C, 0x240,
-        0x200, 0x200, 0x200, 0x200,];
-    $handle = fopen("./data/fast_l8_app_param.dat", "wb");//打开date.bat文件不存在则创建文件
-    foreach ($numbers as $number) {
-        if (fwrite($handle, pack("v", $number)) == FALSE) {//数据打包成二进制字符串后写入文件
-            echo "Can not write data.dat.";
-        }
-    }
+//    $numbers = [0xF4,
+//        0x22D, 0x213, 0x22E, 0x231,
+//        0x200, 0x280, 0x260, 0x225,
+//        0x200, 0x200, 0x200, 0x200,
+//        0x1E0, 0x23B, 0x206, 0x1D6,
+//        0x200, 0x235, 0x26C, 0x240,
+//        0x200, 0x200, 0x200, 0x200,];
+//    $handle = fopen("./data/fast_l8_app_param.dat", "wb");//打开date.bat文件不存在则创建文件
+//    foreach ($numbers as $number) {
+//        if (fwrite($handle, pack("v", $number)) == FALSE) {//数据打包成二进制字符串后写入文件
+//            echo "Can not write data.dat.";
+//        }
+//    }
 //    $handle=fopen('./data/light.dat','wb');
 //    $numbers=[0x100,0xFF,0x1234];
 //    if (fwrite($handle, pack("v", 0x100)) == FALSE) {//数据打包成二进制字符串后写入文件
@@ -48,6 +48,15 @@ function w()
 //            echo "Can not write data.dat.";
 //        }
 //    }
+    $handle=fopen('./data/adc2.dat','wb');
+    if (fwrite($handle, pack("v", 0x102)) == FALSE) {//数据打包成二进制字符串后写入文件
+        echo "Can not write data.dat.";
+    }
+    for($i=0;$i<512;$i++){
+        if (fwrite($handle, pack("v", 0x101)) == FALSE) {//数据打包成二进制字符串后写入文件
+            echo "Can not write data.dat.";
+        }
+    }
     fclose($handle);//关闭一个已打开的文件指针
 }
 

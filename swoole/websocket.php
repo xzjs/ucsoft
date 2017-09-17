@@ -21,7 +21,7 @@ class WSServer
                     'num' => 22
                 )
             ),
-            'ip' => '127.0.0.1',
+            'ip' => '192.168.31.98',
             'port' => '8000',
         )
     ];
@@ -89,6 +89,11 @@ class WSServer
                 case 257:
                     $result['type'] = 'adc';
                     $result['no'] = 0;
+                    $result['data'] = unpack('v512', substr($data, 2));
+                    break;
+                case 258:
+                    $result['type'] = 'adc';
+                    $result['no'] = 1;
                     $result['data'] = unpack('v512', substr($data, 2));
                     break;
                 default:
