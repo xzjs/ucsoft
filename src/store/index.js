@@ -10,7 +10,13 @@ export default new Vuex.Store({
         parameterData: [],
         light: '00000000',
         d_num: 0,
-        myChartses: []
+        myChartses: [],
+        id: 1,
+        adcTitle: [
+            ['adc1', 'adc2', 's0_p0_re', 's0_p1_re', 's1_p0_re', 's1_p1_re', 's2_p0_re', 's2_p1_re', 's3_p0_re', 's3_p1_re'],
+            ['adc1', 'adc2', 'i_0', 'i_4', 'q_0', 'q_4', 'u_0', 'u_4', 'v_0', 'v_4'],
+            ['adc1', 'adc2', 'p0_re', 'p0_rm'],
+        ]
     },
     mutations: {
         SOCKET_ONOPEN (state, event)  {
@@ -26,6 +32,9 @@ export default new Vuex.Store({
         SOCKET_ONMESSAGE (state, message)  {
             state.message = message;
             console.log(message);
+            if(message['id']!=state.id){
+                return;
+            }
             switch (message['type']) {
                 case 'getParameter':
                     state.parameterData = message['parameter'];
@@ -37,7 +46,7 @@ export default new Vuex.Store({
                 case 'adc':
                     var xData = [];
                     var yData = [];
-                    for(var i in message.data){
+                    for (var i in message.data) {
                         xData.push(i);
                         yData.push(message.data[i]);
                     }
@@ -75,8 +84,13 @@ export default new Vuex.Store({
                     break;
             }
         },
+
         setCharts(state, chart){
             state.myChartses.push(chart);
-        }
+        },
+
+        setId(state, id){
+            state.id = id;
+        },
     }
 })

@@ -7,7 +7,7 @@
         </el-row>
         <el-row type="flex" justify="center">
             <el-col>
-                <h1>{{name[id - 1]}}</h1>
+                <h1>{{name[id]}}</h1>
             </el-col>
         </el-row>
         <el-row :gutter="20" :span="24">
@@ -97,7 +97,7 @@
                         <ul>
                             <li v-for="(item,index) in parameterData">
                                 <el-col :span="12">
-                                    <span>{{group2Parameters[id - 1][group2Value][index]}}:</span>
+                                    <span>{{group2Parameters[id][group2Value][index]}}:</span>
                                 </el-col>
                                 <el-col :span="12">
                                     <span>0x</span>
@@ -200,7 +200,6 @@
                 oneDay: '',
                 value: '',
                 upNum: 0,
-                id: 1,
                 group2Value: '',
                 group2Parameters: [
                     {
@@ -224,23 +223,66 @@
                             's0_mixer_cnt', 's1_mixer_cnt', "s2_mixer_cnt", "s3_mixer_cnt", 's4_mixer_cnt', 's5_mixer_cnt', "s6_mixer_cnt", "s7_mixer_cnt",
                             'sync_period', 'ssg_length', "ssg_sel", "adc_sync_sel"
                         ]
+                    },
+                    {
+                        "ten_gbe_param": ['标志位',
+                            "src_mac_addr_l16", "src_mac_addr_m16", 'src_mac_addr_h16', 'src_ip_addr_l16',
+                            "src_ip_addr_h16", "src_port_number", 'dest_mac_addr_l16', 'dest_mac_addr_m16',
+                            "dest_mac_addr_h16", "dest_ip_addr_l16", 'dest_ip_addr_m16', 'dest_port_number',
+                            "pkt_len_l16", "pkt_len_h16"
+                        ],
+                        "adc_cal_param": ['标志位',
+                            "adc1_offset_A", "adc1_offset_B", 'adc1_offset_C', 'adc1_offset_D',
+                            "adc1_gain_A", "adc1_gain_B", 'adc1_gain_C', 'adc1_gain_D',
+                            "adc1_phase_A", "adc1_phase_B", 'adc1_phase_C', 'adc1_phase_D',
+                            "adc2_offset_A", "adc2_offset_B", 'adc2_offset_C', 'adc2_offset_D',
+                            "adc2_gain_A", "adc2_gain_B", 'adc2_gain_C', 'adc2_gain_D',
+                            "adc2_phase_A", "adc2_phase_B", 'adc2_phase_C', 'adc2_phase_D',
+                        ],
+                        "app_param": ['标志位',
+                            "acc_len", "fft_shift", "pkt_interval",
+                            "offset_i", "offset_q", "offset_u", "offset_v",
+                            "scale_i", "scale_q", "scale_u", "scale_v",
+                            "mode_sel", "adc_sync_sel"
+                        ]
+                    },
+                    {
+                        "ten_gbe_param": ['标志位',
+                            "src_mac_addr_l16", "src_mac_addr_m16", 'src_mac_addr_h16', 'src_ip_addr_l16',
+                            "src_ip_addr_h16", "src_port_number", 'dest_mac_addr_l16', 'dest_mac_addr_m16',
+                            "dest_mac_addr_h16", "dest_ip_addr_l16", 'dest_ip_addr_m16', 'dest_port_number',
+                            "pkt_len_l16", "pkt_len_h16"
+                        ],
+                        "adc_cal_param": ['标志位',
+                            "adc1_offset_A", "adc1_offset_B", 'adc1_offset_C', 'adc1_offset_D',
+                            "adc1_gain_A", "adc1_gain_B", 'adc1_gain_C', 'adc1_gain_D',
+                            "adc1_phase_A", "adc1_phase_B", 'adc1_phase_C', 'adc1_phase_D',
+                            "adc2_offset_A", "adc2_offset_B", 'adc2_offset_C', 'adc2_offset_D',
+                            "adc2_gain_A", "adc2_gain_B", 'adc2_gain_C', 'adc2_gain_D',
+                            "adc2_phase_A", "adc2_phase_B", 'adc2_phase_C', 'adc2_phase_D',
+                        ],
+                        "app_param": ['标志位',
+                            "mode_sel", "s0_gain",
+                            "adc_sync_sel", "adc_sync_sel"
+                        ]
                     }
                 ]
             }
         },
         computed: {
-            ...mapState(['parameterData', 'light', 'd_num', 'myChartses'])
+            ...mapState(['parameterData', 'light', 'd_num', 'myChartses', 'id'])
         },
         methods: {
-            ...mapMutations(['setCharts']),
+            ...mapMutations(['setCharts', 'setId']),
             getId(){
                 if (this.$route.params.id != null) {
-                    if (this.$route.params.id > 3) {
-                        this.id = 1;
+                    if (this.$route.params.id > 2) {
+                        this.setId(0);
+                    } else {
+                        this.setId(this.$route.params.id);
                     }
-                    this.id = this.$route.params.id;
                 } else {
-                    this.id = 1;
+                    this.setId(0);
                 }
             },
             /**

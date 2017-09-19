@@ -21,8 +21,44 @@ class WSServer
                     'num' => 22
                 )
             ),
-            'ip' => '192.168.31.98',
+            'ip' => '127.0.0.1',
             'port' => '8000',
+        ),
+        array(
+            'parameters' => array(
+                'ten_gbe_param' => array(
+                    'name' => 'fast_inco_ten_gbe_param.dat',
+                    'num' => 14
+                ),
+                'adc_cal_param' => array(
+                    'name' => 'fast_inco_adc_cal_param.dat',
+                    'num' => 24
+                ),
+                'app_param' => array(
+                    'name' => 'fast_inco_app_param.dat',
+                    'num' => 13
+                )
+            ),
+            'ip' => '100.0.0.2',
+            'port' => '1354',
+        ),
+        array(
+            'parameters' => array(
+                'ten_gbe_param' => array(
+                    'name' => 'fast_baseband_ten_gbe_param.dat',
+                    'num' => 14
+                ),
+                'adc_cal_param' => array(
+                    'name' => 'fast_ baseband_adc_cal_param.dat',
+                    'num' => 24
+                ),
+                'app_param' => array(
+                    'name' => 'fast_ baseband_app_param.dat',
+                    'num' => 4
+                )
+            ),
+            'ip' => '100.0.0.3',
+            'port' => '1354',
         )
     ];
     public $config = array(
@@ -72,7 +108,7 @@ class WSServer
             echo "client {$fd} closed\n";
         });
         //创建udp服务
-        $this->udp_server = $this->ws_server->addlistener('0.0.0.0', 9905, SWOOLE_SOCK_UDP);
+        $this->udp_server = $this->ws_server->addlistener('0.0.0.0', 1354, SWOOLE_SOCK_UDP);
         //监听udp消息
         $this->udp_server->on('Packet', function (swoole_server $serv, $data, $addr) {
             var_dump($data);
@@ -80,6 +116,7 @@ class WSServer
             $tag = unpack('v', $tag);
             var_dump($tag);
             $result = array();
+            $result['id'] = $this->get_index($addr);
             switch ($tag['1']) {
                 case 256:
                     $result['type'] = 'light';
@@ -309,6 +346,21 @@ class WSServer
             echo $exception->getMessage();
             return $exception->getMessage();
         }
+    }
+
+    /**
+     * 根据ip获取是哪个应用
+     * @param $ip string ip地址
+     * @return int 应用编号
+     */
+    function get_index($ip)
+    {
+        for ($i = 0; $i < 3; $i++) {
+            if ($this->file_names[$i]->ip == $ip) {
+                return $i;
+            }
+        }
+        return 0;
     }
 }
 
